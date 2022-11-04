@@ -28,6 +28,8 @@ export default class ProfileEdit extends Component {
       description,
       isLoading: false,
     });
+    this.enabledButton();
+    this.validEmail();
   }
 
   enabledButton = () => {
