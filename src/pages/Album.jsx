@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import Header from '../components/Header';
 import getMusics from '../services/musicsAPI';
 import MusicCard from '../components/MusicCard';
+import { getFavoriteSongs } from '../services/favoriteSongsAPI';
 
 export default class Album extends Component {
   // this.primeiraLinhas = {};
@@ -11,22 +12,25 @@ export default class Album extends Component {
     artistName: '',
     musicas: [],
     collectionName: '',
+    favoritas: [],
   };
 
   async componentDidMount() {
     const { match: { params: { id } } } = this.props;
     const listaMusicas = await getMusics(id);
+    const favoritas = await getFavoriteSongs();
     const [info, ...musicas] = listaMusicas;
     const { artistName, collectionName } = info;
     this.setState({
       artistName,
       musicas,
       collectionName,
-    }, console.log(musicas));
+      favoritas,
+    }, console.log(favoritas));
   }
 
   render() {
-    const { artistName, collectionName, musicas } = this.state;
+    const { artistName, collectionName, musicas, favoritas } = this.state;
     return (
       <div data-testid="page-album">
         <Header />
@@ -45,6 +49,7 @@ export default class Album extends Component {
             previewUrl={ musica.previewUrl }
             trackId={ musica.trackId }
             musica={ musica }
+            favorita={ favoritas.some((favorita) => musica.trackId === favorita.trackId) }
           />)) }
       </div>
     );

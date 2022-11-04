@@ -9,6 +9,13 @@ export default class MusicCard extends Component {
     isLoading: false,
   };
 
+  componentDidMount() {
+    const { favorita } = this.props;
+    this.setState({
+      favorita,
+    });
+  }
+
   handlerChecked = () => {
     const { musica } = this.props;
     this.setState(
@@ -62,6 +69,7 @@ export default class MusicCard extends Component {
 
 MusicCard.propTypes = {
   trackName: PropTypes.string.isRequired,
+  favorita: PropTypes.bool,
   previewUrl: PropTypes.string.isRequired,
   trackId: PropTypes.number.isRequired,
   musica: PropTypes.shape({
