@@ -64,4 +64,7 @@ MusicCard.propTypes = {
   trackName: PropTypes.string.isRequired,
   previewUrl: PropTypes.string.isRequired,
   trackId: PropTypes.number.isRequired,
+  musica: PropTypes.shape({
+    trackId: PropTypes.number.isRequired,
+  }).isRequired,
 };
