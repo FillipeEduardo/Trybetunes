@@ -76,3 +76,7 @@ MusicCard.propTypes = {
     trackId: PropTypes.number.isRequired,
   }).isRequired,
 };
+
+MusicCard.defaultProps = {
+  favorita: false,
+};
