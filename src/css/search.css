@@ -46,6 +46,10 @@
   width: 114px;
 }
 
+.main-search button:hover {
+  cursor: pointer;
+}
+
 .main-search button:disabled {
   background: grey;
 }
