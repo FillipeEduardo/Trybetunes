@@ -1,7 +1,7 @@
+import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { Redirect } from 'react-router-dom';
-import Carregando from '../Carregando';
 import Header from '../components/Header';
+import Loading from '../components/Loading';
 import { getUser, updateUser } from '../services/userAPI';
 
 export default class ProfileEdit extends Component {
@@ -11,141 +11,118 @@ export default class ProfileEdit extends Component {
     email: '',
     description: '',
     image: '',
-    isButtonDisabled: true,
-    redirect: false,
   };
 
-  async componentDidMount() {
+  componentDidMount() {
     this.setState({
       isLoading: true,
+    }, async () => {
+      const { name, email, description, image } = await getUser();
+      this.setState({
+        isLoading: false,
+        name,
+        email,
+        description,
+        image,
+      });
     });
-    const user = await getUser();
-    const { name, email, image, description } = user;
-    this.setState({
-      name,
-      email,
-      image,
-      description,
-      isLoading: false,
-    });
-    this.enabledButton();
-    this.validEmail();
   }
 
-  enabledButton = () => {
-    const { name, email, image, description } = this.state;
-    if (
-      name.length > 0 && email.length > 0 && image.length > 0 && description.length > 0) {
-      this.setState({
-        isButtonDisabled: false,
-      });
-    } else {
-      this.setState({
-        isButtonDisabled: true,
-      });
-    }
+  handlerChange = ({ target: { name, value } }) => {
+    this.setState({ [name]: value });
   };
 
-  validEmail = () => {
-    const { email } = this.state;
-    const regex = /^[a-z0-9.]+@[a-z0-9]+\.[a-z]+(\.[a-z]+)?$/i;
-    const validacao = regex.test(email);
-    if (validacao) {
-      this.setState({
-        isButtonDisabled: false,
-      }, () => {
-        this.enabledButton();
-      });
-    } else {
-      this.setState({
-        isButtonDisabled: true,
-      }, () => {
-        this.enabledButton();
-      });
-    }
-  };
-
-  clickSave = async () => {
+  handlerClick = (e) => {
+    e.preventDefault();
+    const { name, email, description, image } = this.state;
+    const { history } = this.props;
     this.setState({
       isLoading: true,
-    });
-    const { name, email, image, description } = this.state;
-    await updateUser({
-      name,
-      email,
-      image,
-      description,
-    });
-    this.setState({
-      redirect: true,
-      isLoading: false,
+    }, async () => {
+      await updateUser({ name, email, description, image });
+      this.setState({ isLoading: false }, () => history.push('/profile'));
     });
   };
 
-  handlerChange = (e) => {
-    const { name, value } = e.target;
-    this.setState({
-      [name]: value,
-    }, () => {
-      this.enabledButton();
-      this.validEmail();
-    });
+  validation = () => {
+    const { name, email, description, image } = this.state;
+    const regex = /^[a-z0-9.]+@[a-z0-9]+\.[a-z]+(\.[a-z]+)?$/i;
+    const validName = name.length === 0;
+    const validEmail = !regex.test(email);
+    const validDescription = description.length === 0;
+    const validImage = image.length === 0;
+    return (validName || validEmail || validDescription || validImage);
   };
 
   render() {
-    const {
-      isLoading,
-      name, email, image, description, isButtonDisabled, redirect } = this.state;
+    const { name, email, description, image, isLoading } = this.state;
     return (
       <div data-testid="page-profile-edit">
         <Header />
-        { isLoading ? <Carregando />
-          : (
-            <div>
+        {isLoading ? <Loading /> : (
+          <form onSubmit={ this.handlerClick }>
+            <label htmlFor="name">
+              Nome
               <input
-                type="text"
-                name="name"
-                id="name"
-                data-testid="edit-input-name"
-                value={ name }
                 onChange={ this.handlerChange }
-              />
-              <input
+                value={ name }
                 type="text"
+                id="name"
+                name="name"
+                data-testid="edit-input-name"
+              />
+            </label>
+            <label htmlFor="email">
+              E-mail
+              <input
+                data-testid="edit-input-email"
+                type="email"
                 name="email"
                 id="email"
-                data-testid="edit-input-email"
                 value={ email }
                 onChange={ this.handlerChange }
               />
-              <input
-                type="text"
+            </label>
+            <label htmlFor="description">
+              Descrição
+              <textarea
+                onChange={ this.handlerChange }
+                value={ description }
+                data-testid="edit-input-description"
                 name="description"
                 id="description"
-                data-testid="edit-input-description"
-                value={ description }
-                onChange={ this.handlerChange }
+                cols="30"
+                rows="10"
               />
+            </label>
+            <label htmlFor="image">
+              Imagem
               <input
-                type="text"
                 name="image"
                 id="image"
-                value={ image }
-                data-testid="edit-input-image"
                 onChange={ this.handlerChange }
+                value={ image }
+                type="text"
+                data-testid="edit-input-image"
               />
-              <button
-                type="button"
-                data-testid="edit-button-save"
-                disabled={ isButtonDisabled }
-                onClick={ this.clickSave }
-              >
-                Salvar
-              </button>
-              { redirect && <Redirect to="/profile" /> }
-            </div>) }
-
+            </label>
+            <button
+              disabled={ this.validation() }
+              onClick={ this.handlerClick }
+              type="submit"
+              data-testid="edit-button-save"
+            >
+              Salvar
+            </button>
+          </form>
+        )}
       </div>
     );
   }
 }
+
+ProfileEdit.propTypes = {
+  history: PropTypes.shape({
+    push: PropTypes.func.isRequired,
+  }).isRequired,
+};

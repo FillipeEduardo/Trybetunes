@@ -1,56 +1,77 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import Header from '../components/Header';
-import getMusics from '../services/musicsAPI';
+import Loading from '../components/Loading';
 import MusicCard from '../components/MusicCard';
-import { getFavoriteSongs } from '../services/favoriteSongsAPI';
+import '../css/album.css';
+import { addSong, getFavoriteSongs, removeSong } from '../services/favoriteSongsAPI';
+import getMusics from '../services/musicsAPI';
 
 export default class Album extends Component {
-  // this.primeiraLinhas = {};
-
   state = {
-    artistName: '',
-    musicas: [],
-    collectionName: '',
-    favoritas: [],
+    infos: {},
+    faixas: [],
+    isLoading: false,
+    favorites: [],
   };
 
-  async componentDidMount() {
+  componentDidMount() {
     const { match: { params: { id } } } = this.props;
-    const listaMusicas = await getMusics(id);
-    const favoritas = await getFavoriteSongs();
-    const [info, ...musicas] = listaMusicas;
-    const { artistName, collectionName } = info;
     this.setState({
-      artistName,
-      musicas,
-      collectionName,
-      favoritas,
-    }, console.log(favoritas));
+      isLoading: true,
+    }, async () => {
+      const album = await getMusics(id);
+      const [infos, ...faixas] = album;
+      const favorites = await getFavoriteSongs();
+      this.setState({
+        infos,
+        faixas,
+        favorites,
+        isLoading: false,
+      });
+    });
   }
 
+  handlerClick = (song) => {
+    const { favorites } = this.state;
+    this.setState({
+      isLoading: true,
+    }, async () => {
+      if (favorites.some((favorite) => favorite.trackId === song.trackId)) {
+        await removeSong(song);
+      } else await addSong(song);
+      const favoritas = await getFavoriteSongs();
+      this.setState({ isLoading: false, favorites: favoritas });
+    });
+  };
+
   render() {
-    const { artistName, collectionName, musicas, favoritas } = this.state;
+    const { infos, faixas, isLoading, favorites } = this.state;
     return (
-      <div data-testid="page-album">
+      <div className="page-album" data-testid="page-album">
         <Header />
-        <div>
-          <h6
-            data-testid="artist-name"
-          >
-            { artistName }
-          </h6>
-          <span data-testid="album-name">{ collectionName }</span>
-        </div>
-        { musicas.map((musica) => (
-          <MusicCard
-            key={ musica.trackId }
-            trackName={ musica.trackName }
-            previewUrl={ musica.previewUrl }
-            trackId={ musica.trackId }
-            musica={ musica }
-            favorita={ favoritas.some((favorita) => musica.trackId === favorita.trackId) }
-          />)) }
+        {isLoading ? <div className="box-cinza-album-loading"><Loading /></div> : (
+          <main className="main-container-album">
+            <div className="box-azul-album">
+              <div className="infos-album">
+                <img src={ infos.artworkUrl100 } alt="cover" />
+                <div>
+                  <h5 data-testid="album-name">{ infos.collectionName }</h5>
+                  <span data-testid="artist-name">{ infos.artistName }</span>
+                </div>
+              </div>
+            </div>
+            <div className="box-cinza-album">
+              { faixas.map((faixa) => (<MusicCard
+                click={ () => this.handlerClick(faixa) }
+                music={ faixa }
+                key={ faixa.trackId }
+                favorites={ favorites }
+              />)) }
+            </div>
+
+          </main>
+        )}
       </div>
     );
   }
@@ -60,6 +81,6 @@ Album.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string.isRequired,
-    }).isRequired,
+    }),
   }).isRequired,
 };

@@ -1,51 +1,82 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Redirect } from 'react-router-dom';
-import Carregando from '../Carregando';
+import React, { Component } from 'react';
+import Loading from '../components/Loading';
+import '../css/login.css';
+import logo from '../imgs/logo.png';
+import { createUser } from '../services/userAPI';
+
+const THREE_CHARACTER = 3;
 
 export default class Login extends Component {
+  state = {
+    name: '',
+    isLoading: false,
+  };
+
+  handleChange = (e) => {
+    const { name, value } = e.target;
+    this.setState({
+      [name]: value,
+    });
+  };
+
+  handleClick = (e) => {
+    e.preventDefault();
+    const { name } = this.state;
+    const { history } = this.props;
+    this.setState({
+      isLoading: true,
+    }, async () => {
+      await createUser({ name });
+      history.push('/search');
+    });
+  };
+
+  validation = () => {
+    const { name } = this.state;
+    if (name.length < THREE_CHARACTER) return true;
+  };
+
   render() {
-    const {
-      nome,
-      isButtonDisabled,
-      handlerChange,
-      login,
-      isLoading,
-      redirecionar } = this.props;
-
+    const { name, isLoading } = this.state;
     return (
-      <div data-testid="page-login">
-        { isLoading ? <Carregando /> : (
-          <form>
-            <input
-              type="text"
-              name="nome"
-              id="nome"
-              data-testid="login-name-input"
-              value={ nome }
-              onChange={ handlerChange }
-            />
-            <button
-              disabled={ isButtonDisabled }
-              data-testid="login-submit-button"
-              type="button"
-              onClick={ login }
-            >
-              Entrar
-            </button>
-          </form>) }
-
-        { redirecionar && <Redirect to="/search" /> }
+      <div className="container-login">
+        <div className="div-branca-login" data-testid="page-login">
+          {isLoading ? <Loading /> : (
+            <>
+              <img src={ logo } alt="logo" />
+              <form onSubmit={ this.handleClick }>
+                <label htmlFor="name">
+                  <input
+                    onChange={ this.handleChange }
+                    value={ name }
+                    type="text"
+                    name="name"
+                    data-testid="login-name-input"
+                    id="name"
+                    placeholder="Qual o seu nome?"
+                  />
+                </label>
+                <button
+                  disabled={ this.validation() }
+                  data-testid="login-submit-button"
+                  type="submit"
+                  onClick={ this.handleClick }
+                >
+                  Entrar
+                </button>
+              </form>
+            </>
+          )}
+        </div>
       </div>
+
     );
   }
 }
 
 Login.propTypes = {
-  nome: PropTypes.string.isRequired,
-  isButtonDisabled: PropTypes.bool.isRequired,
-  handlerChange: PropTypes.func.isRequired,
-  login: PropTypes.func.isRequired,
-  redirecionar: PropTypes.bool.isRequired,
-  isLoading: PropTypes.bool.isRequired,
+  history: PropTypes.shape({
+    push: PropTypes.func.isRequired,
+  }).isRequired,
 };

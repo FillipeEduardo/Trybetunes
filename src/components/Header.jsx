@@ -1,42 +1,56 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import '../css/header.css';
+import iconeFavoritas from '../imgs/favoritas.png';
+import logo from '../imgs/logo.png';
+import iconePerfil from '../imgs/perfil.png';
+import iconePesquisa from '../imgs/pesquisa.png';
 import { getUser } from '../services/userAPI';
-import Carregando from '../Carregando';
+import Loading from './Loading';
 
 export default class Header extends Component {
   state = {
+    isLoading: true,
     name: '',
-    isLoading: false,
+    image: '',
   };
 
-  componentDidMount() {
+  async componentDidMount() {
+    const { name, image } = await getUser();
     this.setState({
-      isLoading: true,
-    }, async () => {
-      const nome = await this.pegarUsuario();
-      this.setState({
-        name: nome,
-        isLoading: false,
-      });
+      name,
+      image,
+      isLoading: false,
     });
   }
 
-  pegarUsuario = async () => {
-    const User = await getUser(localStorage.getItem('user'));
-    return User.name;
-  };
-
   render() {
-    const { name, isLoading } = this.state;
+    const { name, isLoading, image } = this.state;
     return (
-      <header
-        data-testid="header-component"
-      >
-        { isLoading ? <Carregando /> : (
-          <span data-testid="header-user-name">{ name }</span>) }
-        <Link data-testid="link-to-search" to="/search">Pesquisa</Link>
-        <Link data-testid="link-to-favorites" to="/favorites">Favoritas</Link>
-        <Link data-testid="link-to-profile" to="/profile">Perfil</Link>
+      <header className="header-component" data-testid="header-component">
+        {isLoading ? <Loading /> : (
+          <div className="container-header">
+            <img src={ logo } alt="logo" />
+            <div className="links">
+              <div className="link">
+                <img src={ iconePesquisa } alt="pesquisa" />
+                <Link to="/search" data-testid="link-to-search">Pesquisa</Link>
+              </div>
+              <div className="link">
+                <img src={ iconeFavoritas } alt="pesquisa" />
+                <Link to="/favorites" data-testid="link-to-favorites">Favoritas</Link>
+              </div>
+              <div className="link">
+                <img src={ iconePerfil } alt="pesquisa" />
+                <Link to="/profile" data-testid="link-to-profile">Perfil</Link>
+              </div>
+            </div>
+            <div className="user">
+              <img src={ image } alt="avatar" />
+              <span data-testid="header-user-name">{ name }</span>
+            </div>
+          </div>
+        )}
       </header>
     );
   }

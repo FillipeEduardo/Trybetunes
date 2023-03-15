@@ -1,44 +1,64 @@
 import React, { Component } from 'react';
 import Header from '../components/Header';
+import Loading from '../components/Loading';
 import MusicCard from '../components/MusicCard';
-import { getFavoriteSongs } from '../services/favoriteSongsAPI';
+import '../css/favorites.css';
+import { addSong, getFavoriteSongs, removeSong } from '../services/favoriteSongsAPI';
 
 export default class Favorites extends Component {
   state = {
-    favoritas: [],
+    favorites: [],
+    isLoading: false,
   };
 
-  async componentDidMount() {
-    const favoritas = await getFavoriteSongs();
+  componentDidMount() {
     this.setState({
-      favoritas,
+      isLoading: true,
+    }, async () => {
+      const favorites = await getFavoriteSongs();
+      this.setState({
+        favorites,
+        isLoading: false,
+      });
     });
   }
 
-  async componentDidUpdate() {
-    const favoritasAtualizadas = await getFavoriteSongs();
+  handlerClick = (song) => {
+    const { favorites } = this.state;
     this.setState({
-      favoritas: favoritasAtualizadas,
+      isLoading: true,
+    }, async () => {
+      if (favorites.some((favorite) => favorite.trackId === song.trackId)) {
+        await removeSong(song);
+      } else await addSong(song);
+      const favoritas = await getFavoriteSongs();
+      this.setState({ isLoading: false, favorites: favoritas });
     });
-  }
+  };
 
   render() {
-    const { favoritas } = this.state;
+    const { isLoading, favorites } = this.state;
     return (
-      <div data-testid="page-favorites">
+      <div className="page-favorites" data-testid="page-favorites">
         <Header />
-        {
-          favoritas.map((favorita) => (
-            <MusicCard
-              key={ favorita.trackId }
-              trackName={ favorita.trackName }
-              previewUrl={ favorita.previewUrl }
-              trackId={ favorita.trackId }
-              musica={ favorita }
-              favorita
-            />
-          ))
-        }
+        <main className="main-favorite">
+          <div className="container-azul-favorites">Músicas Favoritas</div>
+          <div className="container-cinza-favorites">
+            {
+              isLoading ? <Loading /> : (
+                <div className="list-favorites">
+                  { favorites.map((favorite) => (
+                    <MusicCard
+                      key={ favorite.trackId }
+                      music={ favorite }
+                      favorites={ favorites }
+                      click={ () => this.handlerClick(favorite) }
+                    />)) }
+                </div>
+              )
+            }
+          </div>
+        </main>
       </div>
     );
   }

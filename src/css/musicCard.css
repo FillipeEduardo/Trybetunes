@@ -1,0 +1,37 @@
+.music-card {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  margin: 20px 0;
+  width: 600px;
+}
+
+.music-card span {
+  align-items: center;
+  color: #001813;
+  display: flex;
+  font-family: Epilogue , sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 14px;
+  width: 150px;
+}
+
+.music-card audio {
+  margin-right: 40px;
+}
+
+.heart {
+  appearance: none;
+  aspect-ratio: 1;
+  border-image: radial-gradient(grey 69%, #0000 70%) 84.5% fill/100%;
+  clip-path: polygon(-41% 0, 50% 91%, 141% 0);
+  cursor: pointer;
+  display: inline-block;
+  width: 25px;
+}
+
+.heart:checked {
+  border-image: radial-gradient(red 69%, #0000 70%) 84.5% fill/100%;
+}
