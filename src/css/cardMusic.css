@@ -1,0 +1,30 @@
+.card-music {
+  height: 248.45px;
+  margin: 20px;
+  text-decoration: none;
+  width: 200px;
+}
+
+.card-music img {
+  border-radius: 10px;
+  height: 200px;
+  width: 200px;
+}
+
+.card-music h6 {
+  color: #3d495c;
+  font-family: Epilogue , sans-serif;
+  font-size: 12.06px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 150%;
+}
+
+.card-music span {
+  color: #3d495c;
+  font-family: Epilogue , sans-serif;
+  font-size: 9.05px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 150%;
+}
